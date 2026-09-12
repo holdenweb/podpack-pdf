@@ -650,8 +650,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "pp-pdf"
-version = "0.2.0"
+name = "podpack-pdf"
+version = "0.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "flask" },

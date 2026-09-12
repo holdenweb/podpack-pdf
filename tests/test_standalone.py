@@ -4,7 +4,7 @@ import zipfile
 from flask import Flask
 from reportlab.pdfgen.canvas import Canvas
 
-from pp_pdf import pdf_blueprint
+from podpack_pdf import pdf_blueprint
 
 
 def _pdf_of(pages):
@@ -70,9 +70,9 @@ def test_oversized_document_is_refused_not_split(app, client):
     """The zip is built in memory, one member per page, so the limit is real.
 
     A refusal, not an error: the document is perfectly readable, we just decline
-    to explode it. Under podpack the limit comes from `[apps.pp_pdf] max_pages`.
+    to explode it. Under podpack the limit comes from `[apps.pdf] max_pages`.
     """
-    app.config["PP_PDF_MAX_PAGES"] = 2
+    app.config["PODPACK_PDF_MAX_PAGES"] = 2
     response = client.post(
         "/pdf/pagezip",
         data={"file_details": (_pdf_of(3), "three.pdf"), "file_prefix": "page"},
@@ -91,7 +91,7 @@ def test_standalone_layout_is_a_complete_document(client):
     favour of the framework's own.
     """
     body = client.get("/pdf/").get_data(as_text=True)
-    assert "pp-pdf standalone layout" in body
+    assert "podpack-pdf standalone layout" in body
     assert body.lstrip().startswith("<!DOCTYPE html>")
     assert "</html>" in body
 
@@ -109,12 +109,12 @@ def test_ships_no_unqualified_base_template():
 
 
 def test_host_site_can_override_the_layout(tmp_path):
-    """A site's own templates/pp_pdf/base.html must shadow the package's.
+    """A site's own templates/pdf/base.html must shadow the package's.
 
     This is the whole override mechanism -- Flask searches the application's
     template folder before any blueprint's -- so it is worth pinning down.
     """
-    site_templates = tmp_path / "templates" / "pp_pdf"
+    site_templates = tmp_path / "templates" / "pdf"
     site_templates.mkdir(parents=True)
     (site_templates / "base.html").write_text(
         "<!DOCTYPE html><html><body><p>site chrome</p>"

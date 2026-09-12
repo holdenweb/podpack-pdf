@@ -1,5 +1,5 @@
 [project]
-name = "pp-pdf"
+name = "podpack-pdf"
 version = "0.2.1"
 description = "PDF booklet-imposition and page-splitting tools as an installable Flask app"
 readme = "README.md"
@@ -21,9 +21,9 @@ email = "steve@holdenweb.com"
 # to the blueprint itself. The entry-point *name* is a mount hint -- the
 # documented consumer does url_prefix=f"/{entry_point.name}/" -- and is
 # deliberately not the app's name. podpack does not use entry points at all; it
-# imports `pp_pdf` by name from the site's app list and reads `site_app`.
+# imports `podpack_pdf` by name from the site's app list and reads `site_app`.
 [project.entry-points."holdenweb.apps"]
-pdf = "pp_pdf:pdf_blueprint"
+pdf = "podpack_pdf:pdf_blueprint"
 
 [build-system]
 requires = [ "uv_build>=0.8.4,<0.9.0",]

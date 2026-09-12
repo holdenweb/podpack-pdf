@@ -4,7 +4,7 @@ The package answers to two contracts and requires neither.
 
 **As a plain Flask blueprint**, for a site with no framework at all::
 
-    from pp_pdf import pdf_blueprint
+    from podpack_pdf import pdf_blueprint
 
     app.register_blueprint(pdf_blueprint, url_prefix="/pdf/")
 
@@ -18,21 +18,21 @@ decision, as it is in Django. Anything needed at registration time goes through
 site's config file::
 
     [site]
-    apps = ["pp_pdf"]
+    apps = ["podpack_pdf"]
 
-    [apps.pp_pdf]
+    [apps.pdf]
     max_pages = 200
 
 podpack reads ``site_app`` below and takes the mount point, the nav entry and the
 config namespace from it.
 
 The two coexist because the podpack half is a config translator, not a second
-code path: both hosts settle ``PP_PDF_BASE_TEMPLATE`` and ``PP_PDF_MAX_PAGES``
+code path: both hosts settle ``PODPACK_PDF_BASE_TEMPLATE`` and ``PODPACK_PDF_MAX_PAGES``
 before the first request, and the views read only those. So the pages wear the
 site's own chrome under podpack, and a complete layout of their own without it.
 A host of either kind can also override any template in this package by shipping
 a file at the same path -- Flask searches the application's template folder
-before any blueprint's, so ``templates/pp_pdf/base.html`` simply wins.
+before any blueprint's, so ``templates/pdf/base.html`` simply wins.
 """
 
 from importlib.util import find_spec
@@ -55,11 +55,11 @@ def _init(app):
     # a name; there is no request here, so name it. It needs an app context
     # either way, and the registry pushes none.
     with app.app_context():
-        settings = app_config("pp_pdf")
+        settings = app_config("pdf")
 
-    app.config.setdefault("PP_PDF_BASE_TEMPLATE", "base.html")
+    app.config.setdefault("PODPACK_PDF_BASE_TEMPLATE", "base.html")
     if "max_pages" in settings:
-        app.config["PP_PDF_MAX_PAGES"] = settings["max_pages"]
+        app.config["PODPACK_PDF_MAX_PAGES"] = settings["max_pages"]
 
 
 # podpack is optional and deliberately so: it is on no index, and this package's
@@ -76,14 +76,14 @@ else:
 
     site_app = SiteApp(
         # This app's name is the blueprint's own -- podpack derives it, so the
-        # template namespace, the data directory and the `[apps.pp_pdf]` config
-        # section all follow from `Blueprint("pp_pdf", ...)` in views.py.
+        # template namespace, the data directory and the `[apps.pdf]` config
+        # section all follow from `Blueprint("pdf", ...)` in views.py.
         blueprint=pdf_blueprint,
         # Where this app asks to be mounted. A site that wants it elsewhere
         # says so in `[site.mounts]`, where its own policy lives -- this app
         # never learns the answer. The nav entry below follows without either
         # side restating it, because it names an endpoint rather than a path.
         url_prefix="/pdf",
-        nav=(Section("PDF tools", "pp_pdf.root_page"),),
+        nav=(Section("PDF tools", "pdf.root_page"),),
         init=_init,
     )

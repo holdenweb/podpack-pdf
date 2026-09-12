@@ -22,18 +22,18 @@ logger = getLogger(__name__)
 # The blueprint's name is also the app's name under podpack, which resolves an
 # app's data directory and config namespace from `request.blueprint`. Keep the
 # two in step; see the SiteApp in __init__.py.
-pdf_blueprint = Blueprint("pp_pdf", __name__, template_folder="templates")
+pdf_blueprint = Blueprint("pdf", __name__, template_folder="templates")
 
 # What these pages extend when no host has said otherwise. Namespaced, like every
 # other template here: Flask searches *every* blueprint's templates for a name
 # the application itself does not supply, so a `base.html` in this package would
 # silently become the site-wide base for a podpack site and reparent every other
 # installed app.
-STANDALONE_LAYOUT = "pp_pdf/standalone.html"
+STANDALONE_LAYOUT = "pdf/standalone.html"
 
 # The splitter builds its zip entirely in memory, one member per page, so an
 # unbounded document is a way to exhaust the process rather than a document we
-# cannot read. A site raises or lowers this with `[apps.pp_pdf] max_pages`.
+# cannot read. A site raises or lowers this with `[apps.pdf] max_pages`.
 DEFAULT_MAX_PAGES = 200
 
 
@@ -46,23 +46,23 @@ def _defaults(state):
     host may have decided already: podpack's ``SiteApp.init`` runs before this
     one and points the layout at the site's own chrome.
     """
-    state.app.config.setdefault("PP_PDF_BASE_TEMPLATE", STANDALONE_LAYOUT)
-    state.app.config.setdefault("PP_PDF_MAX_PAGES", DEFAULT_MAX_PAGES)
+    state.app.config.setdefault("PODPACK_PDF_BASE_TEMPLATE", STANDALONE_LAYOUT)
+    state.app.config.setdefault("PODPACK_PDF_MAX_PAGES", DEFAULT_MAX_PAGES)
 
 
 @pdf_blueprint.context_processor
 def _layout():
-    """Tell ``pp_pdf/base.html`` what to extend.
+    """Tell ``pdf/base.html`` what to extend.
 
     Registered on the blueprint, so the name is in scope for this app's templates
     and for nothing else in the application.
     """
-    return {"pdf_layout": current_app.config["PP_PDF_BASE_TEMPLATE"]}
+    return {"pdf_layout": current_app.config["PODPACK_PDF_BASE_TEMPLATE"]}
 
 
 @pdf_blueprint.route("/", methods=['GET'])
 def root_page():
-    return render_template("pp_pdf/index.html", title="PDF Helpers")
+    return render_template("pdf/index.html", title="PDF Helpers")
 
 
 @pdf_blueprint.route("/booklet", methods=['GET', 'POST'])
@@ -102,7 +102,7 @@ def get_or_post_booklet():
             logger.exception("booklet imposition failed")
             flash("I'm sorry, it seems I couldn't do that. Please report the "
                   f"following message if it makes no sense to you: {e}")
-    return render_template('pp_pdf/booklet_form.html', form=form, title="PDF Booklet Maker")
+    return render_template('pdf/booklet_form.html', form=form, title="PDF Booklet Maker")
 
 
 @pdf_blueprint.route("/pagezip", methods=['GET', 'POST'])
@@ -117,13 +117,13 @@ def get_or_post_pagezip():
         file_prefix = request.form['file_prefix'] or 'page'
         try:
             inputpdf = pdfrw.PdfReader(fname=in_storage.stream)
-            max_pages = current_app.config["PP_PDF_MAX_PAGES"]
+            max_pages = current_app.config["PODPACK_PDF_MAX_PAGES"]
             if len(inputpdf.pages) > max_pages:
                 # A refusal rather than an error, and outside the loop, so the
                 # bare except below cannot turn it into "not a PDF".
                 flash(f"That document has {len(inputpdf.pages)} pages and this "
                       f"tool splits at most {max_pages}.")
-                return render_template('pp_pdf/pagesplit_form.html', form=form,
+                return render_template('pdf/pagesplit_form.html', form=form,
                                        title="PDF Page Splitter")
             outzip = BytesIO()
             container = ZipFile(outzip, 'w')
@@ -144,4 +144,4 @@ def get_or_post_pagezip():
         except Exception:
             logger.exception("could not read the upload as a PDF")
             flash("Could not open file as a PDF - please try again")
-    return render_template('pp_pdf/pagesplit_form.html', form=form, title="PDF Page Splitter")
+    return render_template('pdf/pagesplit_form.html', form=form, title="PDF Page Splitter")

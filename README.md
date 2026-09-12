@@ -1,4 +1,4 @@
-# pp-pdf
+# podpack-pdf
 
 Two PDF utilities packaged as an installable Flask app:
 
@@ -15,11 +15,11 @@ answers to two contracts and requires neither: a plain Flask blueprint, and a
 ## Install
 
 ```bash
-uv add pp-pdf
+uv add podpack-pdf
 ```
 
-The distribution is `pp-pdf`; the module, and the app's name everywhere podpack
-needs one, is `pp_pdf`.
+The distribution is `podpack-pdf`; the module, and the app's name everywhere podpack
+needs one, is `podpack_pdf`.
 
 ---
 
@@ -27,7 +27,7 @@ needs one, is `pp_pdf`.
 
 ```python
 from flask import Flask
-from pp_pdf import pdf_blueprint
+from podpack_pdf import pdf_blueprint
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "..."          # required: the forms are CSRF-protected
@@ -50,7 +50,7 @@ generated with `url_for`.
 
 ```toml
 [project.entry-points."holdenweb.apps"]
-pdf = "pp_pdf:pdf_blueprint"
+pdf = "podpack_pdf:pdf_blueprint"
 ```
 
 A host site can enumerate its installed apps rather than hard-coding imports:
@@ -76,8 +76,8 @@ package uses it on itself, to settle its two config keys:
 ```python
 @pdf_blueprint.record_once
 def _defaults(state):
-    state.app.config.setdefault("PP_PDF_BASE_TEMPLATE", STANDALONE_LAYOUT)
-    state.app.config.setdefault("PP_PDF_MAX_PAGES", DEFAULT_MAX_PAGES)
+    state.app.config.setdefault("PODPACK_PDF_BASE_TEMPLATE", STANDALONE_LAYOUT)
+    state.app.config.setdefault("PODPACK_PDF_MAX_PAGES", DEFAULT_MAX_PAGES)
 ```
 
 ---
@@ -88,9 +88,9 @@ Add the package's **import name** to the site's config file and restart:
 
 ```toml
 [site]
-apps = ["pp_pdf"]
+apps = ["podpack_pdf"]
 
-[apps.pp_pdf]
+[apps.pdf]
 max_pages = 200
 ```
 
@@ -102,14 +102,14 @@ from it:
 site_app = SiteApp(
     blueprint=pdf_blueprint,
     url_prefix="/pdf",
-    nav=(Section("PDF tools", "pp_pdf.root_page"),),
+    nav=(Section("PDF tools", "pdf.root_page"),),
     init=_init,
 )
 ```
 
 The app's name is not declared: podpack derives it from the blueprint's own
-name, so `pp_pdf` — the template namespace, the config section, the data
-directory — follows from `Blueprint("pp_pdf", ...)` in views.py.
+name, so `pdf` — the template namespace, the config section, the data
+directory — follows from `Blueprint("pdf", ...)` in views.py.
 
 `url_prefix` is what this app asks for, not what it is entitled to. A site that
 wants these pages somewhere else in its address space says so, and the nav entry
@@ -118,10 +118,10 @@ podpack resolves it with `url_for` as the chrome renders:
 
 ```toml
 [site.mounts]
-pp_pdf = "/tools/pdf"
+pdf = "/tools/pdf"
 ```
 
-That lives under `[site]`, not in `[apps.pp_pdf]`, because it is the site's
+That lives under `[site]`, not in `[apps.pdf]`, because it is the site's
 policy rather than this package's configuration — `app_config()` returns only
 what this app is meant to read, and where it was mounted is not among it.
 
@@ -129,13 +129,13 @@ So the mount point is the host's under either contract; only the way of saying
 so differs — an argument to `register_blueprint` there, a line of config here.
 
 This app's **name is its blueprint's name**: podpack derives it, so
-`Blueprint("pp_pdf", …)` in `views.py` is what decides the template namespace,
-the data directory and the `[apps.pp_pdf]` config section. There is nothing to
+`Blueprint("pdf", …)` in `views.py` is what decides the template namespace,
+the data directory and the `[apps.pdf]` config section. There is nothing to
 keep in step by hand.
 
 podpack is an **optional** import here — it is on no package index, and this
 package's first contract is to need no framework at all. Where it is absent,
-`pp_pdf.site_app` is `None` and everything else works unchanged.
+`podpack_pdf.site_app` is `None` and everything else works unchanged.
 
 ---
 
@@ -145,10 +145,10 @@ package's first contract is to need no framework at all. Where it is absent,
 | --- | --- | --- |
 | Discovery | `holdenweb.apps` entry point, or a direct import | import name in the site's `apps` list |
 | What is discovered | the `Blueprint` | `site_app: SiteApp` |
-| Mount point | the host's argument to `register_blueprint` | `[site.mounts] pp_pdf`, defaulting to the app's own |
+| Mount point | the host's argument to `register_blueprint` | `[site.mounts] pdf`, defaulting to the app's own |
 | Setup hook | `pdf_blueprint.record_once` | `SiteApp.init` |
-| Page layout | `pp_pdf/standalone.html`, shipped here | the site's `base.html` |
-| Configuration | `app.config["PP_PDF_…"]` | `[apps.pp_pdf]` in the site's TOML |
+| Page layout | `pdf/standalone.html`, shipped here | the site's `base.html` |
+| Configuration | `app.config["PODPACK_PDF_…"]` | `[apps.pdf]` in the site's TOML |
 | Navigation | the host's business | `nav=(Section(…),)` |
 
 The two coexist because the podpack half is a **config translator, not a second
@@ -157,14 +157,14 @@ the views, forms and templates read only those.
 
 ### Templates, and the layout ladder
 
-All templates ship namespaced under `templates/pp_pdf/`, so nothing can collide
-with a host site's own template names. Every page extends `pp_pdf/base.html`,
+All templates ship namespaced under `templates/pdf/`, so nothing can collide
+with a host site's own template names. Every page extends `pdf/base.html`,
 which is one line: it extends whatever the host has said should wrap it.
 
 ```
-a site's own templates/pp_pdf/base.html   shadows this package's entirely
+a site's own templates/pdf/base.html   shadows this package's entirely
 podpack                                   "base.html" -- the site's chrome
-plain Flask                               pp_pdf/standalone.html, shipped here
+plain Flask                               pdf/standalone.html, shipped here
 ```
 
 A host of either kind overrides any template here — including the whole page
@@ -174,14 +174,14 @@ is involved. To wrap these pages in a plain-Flask site's furniture, that is a
 one-line file:
 
 ```jinja
-{# templates/pp_pdf/base.html in the host site #}
+{# templates/pdf/base.html in the host site #}
 {% extends "site-base.html" %}
 ```
 
 or a single config key, set before the blueprint is registered:
 
 ```python
-app.config["PP_PDF_BASE_TEMPLATE"] = "site-base.html"
+app.config["PODPACK_PDF_BASE_TEMPLATE"] = "site-base.html"
 ```
 
 Standalone mode does **not** go looking for a `base.html` of its own accord. A

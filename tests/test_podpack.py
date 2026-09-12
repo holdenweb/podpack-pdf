@@ -24,16 +24,16 @@ pytest.importorskip("podpack", reason="podpack is a dev dependency; run without 
 
 from podpack import Section, SiteApp, app_config, create_app  # noqa: E402
 
-from pp_pdf import pdf_blueprint, site_app  # noqa: E402
-from pp_pdf.views import DEFAULT_MAX_PAGES  # noqa: E402
+from podpack_pdf import pdf_blueprint, site_app  # noqa: E402
+from podpack_pdf.views import DEFAULT_MAX_PAGES  # noqa: E402
 
 # The kind of dict that would otherwise be read from the site's mounted TOML
 # file. Note that `apps` holds the *import* name while `[apps.…]` is keyed by the
 # app's own name; they are the same word here only because this app chose to make
 # them so.
 HOST_CONFIG = {
-    "site": {"name": "test site", "environment": "test", "apps": ["pp_pdf"]},
-    "apps": {"pp_pdf": {"max_pages": 7}},
+    "site": {"name": "test site", "environment": "test", "apps": ["podpack_pdf"]},
+    "apps": {"pdf": {"max_pages": 7}},
 }
 
 
@@ -111,7 +111,7 @@ def test_site_app_conforms():
     # that decides the template namespace, the data directory and the config
     # section. It used to be declared separately here and had to be kept in
     # step by hand; asserting it is now the framework's job, not this app's.
-    assert site_app.name == "pp_pdf"
+    assert site_app.name == "pdf"
 
 
 def test_installs_from_the_app_list_alone(client):
@@ -130,10 +130,10 @@ def test_every_page_renders(client):
 
 def test_pages_wear_the_sites_chrome(app, client):
     """The layout must resolve to the site's base.html, not the one shipped here."""
-    assert app.config["PP_PDF_BASE_TEMPLATE"] == "base.html"
+    assert app.config["PODPACK_PDF_BASE_TEMPLATE"] == "base.html"
     body = client.get("/pdf/").get_data(as_text=True)
     assert "Served by podpack" in body          # podpack's own default chrome
-    assert "pp-pdf standalone layout" not in body
+    assert "podpack-pdf standalone layout" not in body
 
 
 def test_does_not_hijack_the_sites_base_template(site, site_package):
@@ -160,7 +160,7 @@ def test_does_not_hijack_the_sites_base_template(site, site_package):
 
 def test_nav_entry_is_contributed_and_actually_resolves(app, client):
     """The endpoint has to exist, or podpack refuses to boot the whole site."""
-    assert app.extensions["podpack"].nav == [Section("PDF tools", "pp_pdf.root_page")]
+    assert app.extensions["podpack"].nav == [Section("PDF tools", "pdf.root_page")]
     assert 'href="/pdf/"' in client.get("/").get_data(as_text=True)
 
 
@@ -175,9 +175,9 @@ def test_the_site_can_mount_this_app_where_it_likes(site):
         host_config={
             "site": {
                 **HOST_CONFIG["site"],
-                # Site policy, so it lives here rather than in `[apps.pp_pdf]`;
+                # Site policy, so it lives here rather than in `[apps.pdf]`;
                 # this app never sees where it was put.
-                "mounts": {"pp_pdf": "/tools/pdf"},
+                "mounts": {"pdf": "/tools/pdf"},
             }
         }
     )
@@ -192,18 +192,18 @@ def test_the_site_can_mount_this_app_where_it_likes(site):
 
 def test_per_app_directories_are_named_after_the_app(app):
     state = app.extensions["podpack"]
-    assert (state.data_root / "pp_pdf").is_dir()
-    assert (state.log_root / "pp_pdf").is_dir()
+    assert (state.data_root / "pdf").is_dir()
+    assert (state.log_root / "pdf").is_dir()
 
 
 def test_max_pages_comes_from_the_site_config(app):
     """Where the name invariant actually bites: a mismatch returns {} in silence."""
     with app.test_request_context("/pdf/"):
         assert app_config() == {"max_pages": 7}
-    assert app.config["PP_PDF_MAX_PAGES"] == 7
+    assert app.config["PODPACK_PDF_MAX_PAGES"] == 7
 
 
 def test_a_site_without_the_setting_gets_the_packaged_default(site):
-    """`[apps.pp_pdf]` is optional; the app must boot without it."""
+    """`[apps.pdf]` is optional; the app must boot without it."""
     app = site(host_config={"apps": {}})
-    assert app.config["PP_PDF_MAX_PAGES"] == DEFAULT_MAX_PAGES
+    assert app.config["PODPACK_PDF_MAX_PAGES"] == DEFAULT_MAX_PAGES

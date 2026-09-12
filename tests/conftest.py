@@ -1,7 +1,7 @@
 import pytest
 from flask import Flask
 
-from pp_pdf import pdf_blueprint
+from podpack_pdf import pdf_blueprint
 
 
 @pytest.fixture
