@@ -889,7 +889,7 @@ dependencies = [
 
 [[package]]
 name = "podpack-pdf"
-version = "0.2.1"
+version = "0.2.1+dev"
 source = { editable = "." }
 dependencies = [
     { name = "flask" },
