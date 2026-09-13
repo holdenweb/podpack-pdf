@@ -1,8 +1,8 @@
 # Test on every push to main and every pull request.
 #
-# publish.yml runs pytest too, but only when a release tag is pushed -- the most
-# expensive moment to find one failing. This runs it while a fix is cheap. No
-# mypy step: unlike its sibling apps this repo does not configure mypy.
+# publish.yml runs the tests too, but only when a release tag is pushed -- the
+# most expensive moment to find one failing. This runs them while a fix is
+# cheap, and adds mypy, which is configured here but has never been gated.
 name: ci
 
 on:
@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,6 +24,9 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+
+      - name: Types
+        run: uv run mypy
 
       - name: Tests
         run: uv run pytest -q

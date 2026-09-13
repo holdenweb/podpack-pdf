@@ -40,7 +40,20 @@ build-backend = "uv_build"
 # *lock* time and made `uv lock` fail outright on a machine without that
 # checkout. A git source has no such requirement: it needs a network, not a
 # neighbour. `uv sync && uv run pytest` now works anywhere.
-dev = [ "pytest>=9.1.1", "podpack",]
+dev = [ "pytest>=9.1.1", "mypy>=1.11", "types-WTForms", "types-reportlab", "podpack",]
 
 [tool.uv.sources]
 podpack = { git = "https://github.com/holdenweb/podpack.git" }
+
+# Type-checked like its sibling apps, and gated by ci.yml rather than left to
+# be run by hand -- a check nothing runs is a check that is already stale.
+[tool.mypy]
+files = ["src", "tests"]
+
+# Stubs exist for WTForms and reportlab and are installed above, so those are
+# checked for real. These two ship neither stubs nor a py.typed marker and have
+# no types-* package, so they are suppressed per module rather than globally --
+# a blanket ignore_missing_imports would also hide a genuinely missing import.
+[[tool.mypy.overrides]]
+module = ["flask_wtf.*", "pdfrw.*"]
+ignore_missing_imports = true
