@@ -57,7 +57,13 @@ build-backend = "uv_build"
 # *lock* time and made `uv lock` fail outright on a machine without that
 # checkout. A git source has no such requirement: it needs a network, not a
 # neighbour. `uv sync && uv run pytest` now works anywhere.
-dev = [ "pytest>=9.1.1", "mypy>=1.11", "types-WTForms", "types-reportlab", "podpack",]
+dev = [
+ "pytest>=9.1.1",
+ "mypy>=1.11",
+ "types-WTForms",
+ "types-reportlab",
+ "podpack",
+]
 
 [tool.mypy]
 files = ["src", "tests"]
