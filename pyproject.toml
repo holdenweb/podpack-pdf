@@ -1,6 +1,6 @@
 [project]
 name = "podpack-pdf"
-version = "0.2.2"
+version = "0.2.3"
 description = "PDF booklet-imposition and page-splitting tools as an installable Flask app"
 readme = "README.md"
 license = "MIT"
@@ -21,6 +21,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Application Frameworks",
 ]
 dependencies = [
+    "podpack>=0.10.1",
     "flask (>=2.3.3)",
     "flask-wtf (>=1.2.1)",
     "wtforms (>=3.0)",
@@ -58,11 +59,6 @@ build-backend = "uv_build"
 # neighbour. `uv sync && uv run pytest` now works anywhere.
 dev = [ "pytest>=9.1.1", "mypy>=1.11", "types-WTForms", "types-reportlab", "podpack",]
 
-[tool.uv.sources]
-podpack = { git = "https://github.com/holdenweb/podpack.git" }
-
-# Type-checked like its sibling apps, and gated by ci.yml rather than left to
-# be run by hand -- a check nothing runs is a check that is already stale.
 [tool.mypy]
 files = ["src", "tests"]
 
