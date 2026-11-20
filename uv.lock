@@ -975,7 +975,6 @@ dependencies = [
     { name = "flask" },
     { name = "flask-wtf" },
     { name = "pdfrw" },
-    { name = "podpack" },
     { name = "reportlab" },
     { name = "wtforms" },
 ]
@@ -994,7 +993,6 @@ requires-dist = [
     { name = "flask", specifier = ">=2.3.3" },
     { name = "flask-wtf", specifier = ">=1.2.1" },
     { name = "pdfrw", specifier = ">=0.4" },
-    { name = "podpack", specifier = ">=0.10.1" },
     { name = "reportlab", specifier = ">=3.6.12" },
     { name = "wtforms", specifier = ">=3.0" },
 ]
